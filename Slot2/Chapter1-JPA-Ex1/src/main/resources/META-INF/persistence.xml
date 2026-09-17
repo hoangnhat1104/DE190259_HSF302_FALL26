@@ -5,9 +5,10 @@
              https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd"
              version="3.1">
 
+    <!-- TODO 0.2: Đăng ký entity Employee vào persistence-unit -->
     <persistence-unit name="chapter1-jpa-ex1" transaction-type="RESOURCE_LOCAL">
 
-        <!-- Entity được đăng ký -->
+        <!-- Entity được đăng ký — thêm <class> cho mỗi entity mới -->
         <class>fu.de190259.entity.Employee</class>
 
         <properties>
