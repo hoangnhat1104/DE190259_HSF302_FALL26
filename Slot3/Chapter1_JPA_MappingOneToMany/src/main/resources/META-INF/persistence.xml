@@ -14,7 +14,7 @@
             <property name="jakarta.persistence.jdbc.driver"
                       value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
             <property name="jakarta.persistence.jdbc.url"
-                      value="jdbc:sqlserver://localhost:1433;databaseName=HSF302_Chapter1;encrypt=false;trustServerCertificate=true"/>
+                      value="jdbc:sqlserver://localhost:1435;databaseName=HSF302_Chapter1;encrypt=false;trustServerCertificate=true"/>
             <property name="jakarta.persistence.jdbc.user" value="sa"/>
             <property name="jakarta.persistence.jdbc.password" value="sa"/>
 
