@@ -108,4 +108,28 @@ public class EmployeeDAO {
             em.close();
         }
     }
+
+    // ================================================================
+    // TODO 0.6 — UPDATE: cập nhật thông tin Employee đã tồn tại
+    // ================================================================
+    public Employee update(Employee e) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            // merge() vì entity có thể đang ở trạng thái Detached
+            // object trả về từ merge() là Managed, object cũ vẫn Detached
+            Employee managed = em.merge(e);
+
+            em.getTransaction().commit();
+            return managed;  // trả về entity Managed sau khi merge
+        } catch (Exception ex) {
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            throw ex;
+        } finally {
+            em.close();
+        }
+    }
 }
