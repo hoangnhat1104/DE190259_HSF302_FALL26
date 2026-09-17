@@ -8,6 +8,10 @@ import java.time.LocalDate;
 /**
  * TODO 2.1 — Entity Employee
  * Đại diện cho bảng "employees" trong DB.
+ *
+ * TODO 2.2 — Owning side (@ManyToOne)
+ * Employee giữ khóa ngoại department_id → đây là owning side.
+ * fetch = LAZY: không load Department khi load Employee (tiết kiệm query).
  */
 @Entity
 @Table(name = "employees")
@@ -38,6 +42,13 @@ public class Employee {
     // boolean nguyên thủy — không cho phép null
     @Column(name = "active")
     private boolean active = true;
+
+    // TODO 2.2 — Owning side: Employee giữ FK department_id
+    // FetchType.LAZY: không load Department tự động khi load Employee
+    // nullable = false: mỗi Employee bắt buộc thuộc 1 Department
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_id", nullable = false)
+    private Department department;
 
     // Constructor không tham số — bắt buộc với JPA
     public Employee() {
@@ -109,6 +120,14 @@ public class Employee {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     @Override
