@@ -78,6 +78,27 @@ public class Department {
         this.employees = employees;
     }
 
+    // TODO 2.4 — Helper methods đồng bộ 2 chiều
+
+    /**
+     * Thêm Employee vào phòng ban.
+     * Đồng thời set department cho Employee để 2 phía luôn nhất quán trong memory.
+     */
+    public void addEmployee(Employee e) {
+        this.employees.add(e);
+        e.setDepartment(this);
+    }
+
+    /**
+     * Xóa Employee khỏi phòng ban.
+     * Đồng thời clear department của Employee.
+     * Nhờ orphanRemoval = true, Employee sẽ bị xóa khỏi DB khi flush.
+     */
+    public void removeEmployee(Employee e) {
+        this.employees.remove(e);
+        e.setDepartment(null);
+    }
+
     @Override
     public String toString() {
         return "Department{id=" + id + ", name='" + name + "', location='" + location + "'}";
