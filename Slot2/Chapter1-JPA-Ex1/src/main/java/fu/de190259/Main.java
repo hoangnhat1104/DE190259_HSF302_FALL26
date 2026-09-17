@@ -7,6 +7,14 @@ import fu.de190259.entity.Gender;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * TODO 0.10 — Entity Lifecycle trong JPA:
+ *
+ *  NEW/TRANSIENT : object vừa new, chưa liên kết với EntityManager, chưa có id
+ *  MANAGED       : đang được EntityManager theo dõi trong transaction (dirty checking)
+ *  DETACHED      : từng Managed nhưng EntityManager đã đóng / clear
+ *  REMOVED       : đã gọi remove(), sẽ bị xóa khỏi DB sau commit
+ */
 public class Main {
     public static void main(String[] args) {
 
@@ -18,10 +26,11 @@ public class Main {
 
         // ============================================================
         // BƯỚC 1 — CREATE
-        // Trạng thái: entity đang NEW/TRANSIENT (chưa có id, chưa liên kết EM)
         // ============================================================
         System.out.println("\n--- BƯỚC 1: CREATE ---");
 
+        // TODO 0.10: Trước save() → entity đang NEW/TRANSIENT
+        // (vừa new, chưa liên kết EM, id = null)
         Employee emp = new Employee(
                 "Nguyen Van A",
                 "vana@example.com",
@@ -30,36 +39,38 @@ public class Main {
                 LocalDate.of(2020, 6, 1),
                 true
         );
-        // Trước save(): entity đang NEW/TRANSIENT
-        System.out.println("Trước save() → trạng thái: NEW/TRANSIENT, id = " + emp.getId());
+        System.out.println("Trước save() → NEW/TRANSIENT, id = " + emp.getId());
 
         dao.save(emp);
 
-        // Sau save() return (EntityManager đã đóng): entity đang DETACHED
-        System.out.println("Sau save()   → trạng thái: DETACHED, id = " + emp.getId());
+        // TODO 0.10: Ngay sau persist() trong transaction → MANAGED
+        //            Sau commit() + em.close() → DETACHED
+        //            Vì save() đã đóng EM, nên khi return về đây entity là DETACHED
+        System.out.println("Sau save()   → DETACHED, id = " + emp.getId());
 
         // ============================================================
         // BƯỚC 2 — READ (findById)
         // ============================================================
         System.out.println("\n--- BƯỚC 2: READ findById ---");
 
+        // TODO 0.10: findById trả về entity sau khi EM đóng → DETACHED
         Employee found = dao.findById(emp.getId());
-        // found được trả về sau khi EM đóng → DETACHED
-        System.out.println("findById(" + emp.getId() + ") → " + found);
+        System.out.println("findById(" + emp.getId() + ") → DETACHED, " + found);
 
         // ============================================================
         // BƯỚC 3 — UPDATE
         // ============================================================
         System.out.println("\n--- BƯỚC 3: UPDATE ---");
 
-        // found đang DETACHED — sửa salary rồi gọi update()
+        // TODO 0.10: found đang DETACHED — sửa field rồi gọi update()
         found.setSalary(new BigDecimal("20000000"));
-        System.out.println("Trước update() → trạng thái: DETACHED, salary mới = " + found.getSalary());
+        System.out.println("Trước update() → DETACHED, salary mới = " + found.getSalary());
 
+        // TODO 0.10: Sau update() (gọi merge()):
+        //   - object trả về từ merge() là MANAGED (trong transaction đó)
+        //   - object 'found' truyền vào vẫn DETACHED
         Employee updated = dao.update(found);
-        // object trả về từ merge() là MANAGED (trong transaction đó)
-        // found truyền vào vẫn DETACHED
-        System.out.println("Sau update()   → managed.salary = " + updated.getSalary());
+        System.out.println("Sau update()   → updated là MANAGED (đã commit), salary = " + updated.getSalary());
 
         // ============================================================
         // BƯỚC 4 — READ lại để kiểm tra UPDATE
@@ -67,7 +78,7 @@ public class Main {
         System.out.println("\n--- BƯỚC 4: READ lại sau UPDATE ---");
 
         Employee afterUpdate = dao.findById(emp.getId());
-        System.out.println("findById sau update → salary = " + afterUpdate.getSalary());
+        System.out.println("findById sau update → DETACHED, salary = " + afterUpdate.getSalary());
 
         // ============================================================
         // BƯỚC 5 — DELETE
@@ -76,9 +87,11 @@ public class Main {
 
         System.out.println("Xóa employee id = " + emp.getId());
         dao.delete(emp.getId());
-        // Sau delete(): entity chuyển sang REMOVED trong transaction,
-        // biến mất khỏi DB sau commit()
-        System.out.println("Đã xóa → trạng thái: REMOVED/biến mất khỏi DB");
+
+        // TODO 0.10: Sau delete():
+        //   - Trong transaction: entity chuyển sang REMOVED
+        //   - Sau commit(): entity biến mất khỏi DB hoàn toàn
+        System.out.println("Sau delete() + commit() → REMOVED, biến mất khỏi DB");
 
         // ============================================================
         // BƯỚC 6 — READ lại để kiểm tra DELETE
@@ -87,7 +100,7 @@ public class Main {
 
         Employee afterDelete = dao.findById(emp.getId());
         if (afterDelete == null) {
-            System.out.println("findById(" + emp.getId() + ") → null (đã xóa thành công)");
+            System.out.println("findById(" + emp.getId() + ") → null (xóa thành công ✓)");
         } else {
             System.out.println("findById → " + afterDelete + " (XÓA THẤT BẠI!)");
         }
@@ -101,7 +114,7 @@ public class Main {
         // ============================================================
         System.out.println("\n--- BƯỚC 7: KIỂM TRA UNIQUE EMAIL ---");
 
-        // Tạo employee thứ nhất với email "unique@example.com"
+        // TODO 0.10: emp1 trước save() → NEW/TRANSIENT
         Employee emp1 = new Employee(
                 "Tran Thi B",
                 "unique@example.com",
@@ -111,9 +124,11 @@ public class Main {
                 true
         );
         dao.save(emp1);
-        System.out.println("Save emp1 thành công → id = " + emp1.getId());
+        // TODO 0.10: sau save() → DETACHED
+        System.out.println("Save emp1 thành công → DETACHED, id = " + emp1.getId());
 
         // Cố ý tạo employee thứ hai với CÙNG email → phải ném exception
+        // TODO 0.10: emp2 → NEW/TRANSIENT, sẽ không bao giờ thành MANAGED vì lỗi unique
         Employee emp2 = new Employee(
                 "Le Van C",
                 "unique@example.com",   // email trùng với emp1
