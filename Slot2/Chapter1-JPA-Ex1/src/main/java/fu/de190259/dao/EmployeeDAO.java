@@ -61,4 +61,51 @@ public class EmployeeDAO {
             em.close();
         }
     }
+
+    // ================================================================
+    // TODO 0.5 — READ có điều kiện (JPQL)
+    // ================================================================
+
+    // Tìm nhân viên theo email — dùng để check trùng trước khi tạo mới
+    // Trả về null nếu không tìm thấy (không ném exception)
+    public Employee findByEmail(String email) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            List<Employee> result = em.createQuery(
+                    "SELECT e FROM Employee e WHERE e.email = :email",
+                    Employee.class)
+                    .setParameter("email", email)   // không nối chuỗi trực tiếp
+                    .getResultList();
+            return result.isEmpty() ? null : result.get(0);
+        } finally {
+            em.close();
+        }
+    }
+
+    // Tìm danh sách nhân viên có salary lớn hơn mức cho trước
+    public List<Employee> findBySalaryGreaterThan(java.math.BigDecimal minSalary) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT e FROM Employee e WHERE e.salary > :minSalary",
+                    Employee.class)
+                    .setParameter("minSalary", minSalary)  // không nối chuỗi trực tiếp
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    // Tìm danh sách nhân viên đang active
+    public List<Employee> findAllActive() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT e FROM Employee e WHERE e.active = true",
+                    Employee.class)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
 }
