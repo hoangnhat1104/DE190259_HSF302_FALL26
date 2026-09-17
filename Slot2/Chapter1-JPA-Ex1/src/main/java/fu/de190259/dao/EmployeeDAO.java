@@ -5,6 +5,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 
+import java.util.List;
+
 public class EmployeeDAO {
 
     // EntityManagerFactory — khởi tạo 1 lần, dùng chung
@@ -30,6 +32,33 @@ public class EmployeeDAO {
             throw ex;
         } finally {
             em.close();                          // luôn đóng EntityManager
+        }
+    }
+
+    // ================================================================
+    // TODO 0.4 — READ: findById
+    // ================================================================
+    public Employee findById(Long id) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            // em.find trả về null nếu không tìm thấy, không ném exception
+            return em.find(Employee.class, id);
+        } finally {
+            em.close();
+        }
+    }
+
+    // ================================================================
+    // TODO 0.4 — READ: findAll
+    // ================================================================
+    public List<Employee> findAll() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            // JPQL — dùng tên class Employee, không phải tên bảng employees
+            return em.createQuery("SELECT e FROM Employee e", Employee.class)
+                     .getResultList();
+        } finally {
+            em.close();
         }
     }
 }
