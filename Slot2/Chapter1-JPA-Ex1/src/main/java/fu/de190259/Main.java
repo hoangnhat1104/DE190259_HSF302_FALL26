@@ -95,5 +95,50 @@ public class Main {
         System.out.println("\n========================================");
         System.out.println("     DEMO CRUD HOÀN TẤT - KHÔNG LỖI    ");
         System.out.println("========================================");
+
+        // ============================================================
+        // BƯỚC 7 — TODO 0.9: Kiểm chứng ràng buộc unique trên email
+        // ============================================================
+        System.out.println("\n--- BƯỚC 7: KIỂM TRA UNIQUE EMAIL ---");
+
+        // Tạo employee thứ nhất với email "unique@example.com"
+        Employee emp1 = new Employee(
+                "Tran Thi B",
+                "unique@example.com",
+                new BigDecimal("12000000"),
+                Gender.FEMALE,
+                LocalDate.of(2021, 1, 15),
+                true
+        );
+        dao.save(emp1);
+        System.out.println("Save emp1 thành công → id = " + emp1.getId());
+
+        // Cố ý tạo employee thứ hai với CÙNG email → phải ném exception
+        Employee emp2 = new Employee(
+                "Le Van C",
+                "unique@example.com",   // email trùng với emp1
+                new BigDecimal("13000000"),
+                Gender.MALE,
+                LocalDate.of(2022, 3, 10),
+                true
+        );
+
+        try {
+            dao.save(emp2);
+            System.out.println("CẢNH BÁO: Save emp2 thành công — unique constraint KHÔNG hoạt động!");
+        } catch (Exception e) {
+            // Kỳ vọng: ConstraintViolationException / PersistenceException
+            System.out.println("ĐÚNG KỲ VỌNG: Save emp2 thất bại vì email trùng!");
+            System.out.println("Loại exception: " + e.getClass().getSimpleName());
+            System.out.println("Thông báo: " + e.getMessage());
+        }
+
+        // Dọn dẹp — xóa emp1 sau khi test
+        dao.delete(emp1.getId());
+        System.out.println("Đã xóa emp1 sau khi test unique.");
+
+        System.out.println("\n========================================");
+        System.out.println("     DEMO HOÀN TẤT - TẤT CẢ PASS!      ");
+        System.out.println("========================================");
     }
 }
