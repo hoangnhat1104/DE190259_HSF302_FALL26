@@ -70,7 +70,7 @@ public class DepartmentDAO {
 
     /**
      * TODO 2.9 — Lấy tất cả Department kèm Employee bằng JOIN FETCH.
-     * Fix N+1: chỉ 1 câu SQL thay vì 1+N.
+     * Fix N+1: chỉ 1 câu SQL thay vì 1+N câu.
      */
     public List<Department> findAllWithEmployees() {
         EntityManager em = JPAUtil.getEntityManager();

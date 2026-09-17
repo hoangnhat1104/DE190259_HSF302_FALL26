@@ -15,7 +15,6 @@ public class Main {
         DepartmentDAO departmentDAO = new DepartmentDAO();
 
         // ── TODO 2.7 — Tạo 1 Department + 3 Employee ─────────────────────────
-
         Department it = new Department("Marketing", "Ha Noi");
 
         Employee e1 = new Employee("aa.nguyen@company.com", "Nguyen Van A", Gender.MALE,
@@ -25,18 +24,17 @@ public class Main {
         Employee e3 = new Employee("cc.le@company.com", "Le Van C", Gender.OTHER,
                 new BigDecimal("12000000"), LocalDate.of(2023, 3, 15));
 
-        // Dùng helper method addEmployee() để đồng bộ 2 chiều (TODO 2.4)
+        // Dùng helper method addEmployee() — đồng bộ 2 chiều (TODO 2.4)
         it.addEmployee(e1);
         it.addEmployee(e2);
         it.addEmployee(e3);
 
-        // Chỉ persist(department) — cascade = ALL tự lo phần Employee (TODO 2.7)
+        // Chỉ persist(department) — cascade = ALL tự lo phần Employee
         departmentDAO.save(it);
         System.out.println("Da luu Department, id = " + it.getId());
 
         // ── TODO 2.6 — Tìm lại kèm employees bằng JOIN FETCH ─────────────────
-        // Không bị LazyInitializationException vì employees đã được load
-        // trong cùng 1 query, dù EntityManager đã đóng sau đó.
+        // Không bị LazyInitializationException vì employees đã load trong cùng 1 query
         Department found = departmentDAO.findByIdWithEmployees(it.getId());
         System.out.println("Phong ban: " + found.getName());
         for (Employee e : found.getEmployees()) {
@@ -44,24 +42,21 @@ public class Main {
         }
 
         // ── TODO 2.8 — Tái hiện N+1 Query Problem ────────────────────────────
-        // findAll() trả về danh sách Department (không load employees).
-        // Mỗi lần gọi .getEmployees() của 1 department → kích hoạt 1 query riêng.
-        // Tổng: 1 câu SELECT departments + N câu SELECT employees (1 câu/department).
+        // findAll() = 1 câu SELECT departments
+        // Mỗi .getEmployees() kích hoạt thêm 1 câu SELECT employees riêng
+        // Tổng: 1 + N câu SQL (N = số department)
         System.out.println("\n=== TODO 2.8: N+1 Query Problem ===");
-        System.out.println("(Kiem tra console: phai thay 1 + N cau SQL)");
-        var allDepts = departmentDAO.findAll();
-        for (Department d : allDepts) {
-            // Mỗi dòng này kích hoạt 1 SELECT riêng vào bảng employees
+        System.out.println("(Kiem tra console: thay 1 + N cau SQL)");
+        for (Department d : departmentDAO.findAll()) {
             System.out.println(d.getName() + " co " + d.getEmployees().size() + " nhan vien");
         }
 
         // ── TODO 2.9 — Fix N+1 bằng JOIN FETCH ───────────────────────────────
-        // findAllWithEmployees() dùng JOIN FETCH → chỉ 1 câu SQL cho tất cả.
-        // So sánh: trước fix = 1 + N câu, sau fix = 1 câu duy nhất.
+        // findAllWithEmployees() = chỉ 1 câu SQL có JOIN
+        // Truoc fix: 1 + N cau | Sau fix: 1 cau duy nhat
         System.out.println("\n=== TODO 2.9: Fix N+1 bang JOIN FETCH ===");
-        System.out.println("(Kiem tra console: chi con 1 cau SQL duy nhat co JOIN)");
-        var allDeptsWithEmps = departmentDAO.findAllWithEmployees();
-        for (Department d : allDeptsWithEmps) {
+        System.out.println("(Kiem tra console: chi con 1 cau SQL co JOIN)");
+        for (Department d : departmentDAO.findAllWithEmployees()) {
             System.out.println(d.getName() + " co " + d.getEmployees().size() + " nhan vien");
         }
 
