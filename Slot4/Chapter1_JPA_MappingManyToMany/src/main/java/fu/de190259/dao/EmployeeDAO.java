@@ -31,6 +31,18 @@ public class EmployeeDAO {
         }
     }
 
+    /** Lấy tất cả Employee kèm projects bằng JOIN FETCH — tránh LazyInitializationException */
+    public List<Employee> findAllWithProjects() {
+        EntityManager em = JPAUtil.getEntityManager();
+        try {
+            return em.createQuery(
+                    "SELECT DISTINCT e FROM Employee e JOIN FETCH e.projects",
+                    Employee.class).getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
     /** Lấy tất cả Employee */
     public List<Employee> findAll() {
         EntityManager em = JPAUtil.getEntityManager();
