@@ -47,8 +47,28 @@ public class Employee {
     @Column(name = "active")
     private boolean active = true;
 
-    // TODO 5.2 — Owning side của quan hệ N–N (sẽ hoàn thiện ở TODO 5.2)
-    // Khởi tạo sẵn HashSet để tránh NullPointerException khi gọi .add()
+    // TODO 5.2 — Owning side của quan hệ N–N
+    //
+    // Tại sao Employee là owning side?
+    //   - Owning side là bên giữ @JoinTable — tức là bên "biết" về bảng trung gian.
+    //   - Employee được chọn vì logic nghiệp vụ: nhân viên được phân công vào project,
+    //     không phải project tự kéo nhân viên vào.
+    //
+    // @JoinTable:
+    //   - name = "employee_project": tên bảng trung gian Hibernate sẽ tạo
+    //   - joinColumns: FK trỏ về bảng employees (phía owning = Employee)
+    //   - inverseJoinColumns: FK trỏ về bảng projects (phía inverse = Project)
+    //
+    // Không dùng cascade = ALL vì:
+    //   - cascade REMOVE sẽ xóa Project khi xóa Employee → SAI!
+    //     Một Project có thể còn nhiều Employee khác, không được xóa theo.
+    //   - N–N thường không cascade REMOVE để tránh xóa nhầm entity phía bên kia.
+    @ManyToMany
+    @JoinTable(
+        name = "employee_project",
+        joinColumns = @JoinColumn(name = "employee_id"),
+        inverseJoinColumns = @JoinColumn(name = "project_id")
+    )
     private Set<Project> projects = new HashSet<>();
 
     // Constructor không tham số — bắt buộc với JPA
