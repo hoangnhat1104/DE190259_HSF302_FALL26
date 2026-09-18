@@ -47,12 +47,18 @@ public class Project {
     private LocalDate endDate;
 
     // TODO 5.3 — Inverse side của quan hệ N–N
-    // mappedBy = "projects" trỏ về tên field Set<Project> ở Employee (owning side)
+    //
+    // mappedBy = "projects":
+    //   - Trỏ về tên field "projects" trong Employee (owning side).
+    //   - Phải khớp chính xác tên field, không phải tên bảng hay cột.
+    //   - Hibernate dùng mappedBy để biết: Project KHÔNG giữ @JoinTable,
+    //     mọi thay đổi quan hệ phải thực hiện qua Employee (owning side).
     //
     // Tại sao KHÔNG dùng cascade = ALL ở đây?
-    // → Nếu cascade REMOVE: xóa 1 Project sẽ kéo theo xóa tất cả Employee liên quan — SAI!
-    //   Employee có thể đang làm việc ở nhiều project khác, không thể bị xóa theo project.
-    // → N–N thường chỉ cascade PERSIST/MERGE nếu cần, hoặc không cascade gì cả.
+    //   - cascade REMOVE: xóa 1 Project → kéo theo xóa toàn bộ Employee liên quan — SAI!
+    //     Employee có thể đang tham gia nhiều project khác, không được xóa theo project này.
+    //   - Nguyên tắc: trong N–N, không bên nào nên cascade REMOVE sang bên kia
+    //     vì entity 2 phía đều có vòng đời độc lập.
     @ManyToMany(mappedBy = "projects")
     private Set<Employee> employees = new HashSet<>();
 
