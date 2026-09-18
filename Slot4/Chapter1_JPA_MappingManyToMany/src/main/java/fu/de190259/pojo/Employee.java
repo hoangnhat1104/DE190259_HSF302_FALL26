@@ -152,6 +152,39 @@ public class Employee {
     }
 
     /**
+     * TODO 5.5 — Helper method đồng bộ 2 chiều khi phân công nhân viên vào project.
+     *
+     * Tại sao phải add cả 2 phía?
+     *   - JPA chỉ tự đồng bộ xuống DB qua owning side (Employee.projects).
+     *   - Nhưng trong memory (trong cùng 1 session), nếu chỉ add 1 phía thì
+     *     p.getEmployees() sẽ không chứa employee này → dữ liệu không nhất quán
+     *     khi đọc lại từ object đang được quản lý (managed entity).
+     *   - Dùng helper method để đảm bảo luôn đồng bộ cả 2 chiều, tránh bug khó tìm.
+     */
+    public void assignToProject(Project p) {
+        // Thêm vào phía owning (Employee) → Hibernate sẽ INSERT vào employee_project
+        this.projects.add(p);
+        // Thêm vào phía inverse (Project) → đồng bộ trong memory
+        p.getEmployees().add(this);
+    }
+
+    /**
+     * TODO 5.9 — Helper method gỡ nhân viên khỏi project (đồng bộ 2 chiều).
+     *
+     * Tại sao phải remove cả 2 phía?
+     *   - Tương tự assignToProject: owning side quyết định DB,
+     *     nhưng inverse side phải được cập nhật để nhất quán trong memory.
+     *   - Chỉ xóa dòng trong bảng trung gian employee_project,
+     *     KHÔNG xóa Employee hay Project gốc.
+     */
+    public void unassignFromProject(Project p) {
+        // Xóa khỏi owning side → Hibernate sẽ DELETE dòng trong employee_project
+        this.projects.remove(p);
+        // Xóa khỏi inverse side → đồng bộ trong memory
+        p.getEmployees().remove(this);
+    }
+
+    /**
      * TODO 5.4 — equals() dựa trên email (business key), KHÔNG dùng id.
      *
      * Lý do không dùng id:
